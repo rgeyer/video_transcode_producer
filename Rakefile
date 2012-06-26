@@ -2,6 +2,7 @@
 
 require 'rubygems'
 require 'bundler'
+require 'rspec/core/rake_task'
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -17,13 +18,37 @@ Jeweler::Tasks.new do |gem|
   gem.name = "controller"
   gem.homepage = "http://github.com/rgeyer/controller"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Fetches videos from an RSS feed, and creates transcoding jobs in an AMQP queue}
+  gem.description = gem.summary
   gem.email = "me@ryangeyer.com"
   gem.authors = ["Ryan J. Geyer"]
+  gem.executables << 'gio_2012_controller'
   # dependencies defined in Gemfile
 end
 Jeweler::RubygemsDotOrgTasks.new
+
+# == Unit tests == #
+spec_opts_file = "\"#{File.dirname(__FILE__)}/spec/spec.opts\""
+RSPEC_OPTS = ['--options', spec_opts_file]
+
+desc 'Run unit tests'
+RSpec::Core::RakeTask.new do |t|
+  t.rspec_opts = RSPEC_OPTS
+end
+
+namespace :spec do
+  desc 'Run unit tests with RCov'
+  RSpec::Core::RakeTask.new(:rcov) do |t|
+    t.rspec_opts = RSPEC_OPTS
+    t.rcov = true
+    t.rcov_opts = %q[--exclude "spec"]
+  end
+
+  desc 'Print Specdoc for all unit tests'
+  RSpec::Core::RakeTask.new(:doc) do |t|
+    t.rspec_opts = ["--format", "documentation"]
+  end
+end
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|

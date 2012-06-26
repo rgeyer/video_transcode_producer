@@ -19,40 +19,29 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-require 'fog'
-require 'bunny'
-require 'simple-rss'
-require 'open-uri'
+require File.expand_path(File.join(File.dirname(__FILE__), 'helper'))
 
-module RGeyer
-  class Controller
+require 'yaml'
 
-    def initialize(amqp_hostname, options={})
-      options.merge!({:host => amqp_hostname})
-      @input_queue_name = options[:input_queue_name] || 'encode_input'
-
-      @gstore = Fog::Storage.new({:provider => 'Google'})
-      @bunny = Bunny.new(options)
-      @bunny.start
-      @queue = @bunny.queue(@input_queue_name)
-      @exchange = @bunny.exchange('')
+describe RGeyer::Controller do
+  context :list_gstore_objects do
+    it 'can contact google' do
+      yo = RGeyer::Controller.new("50.112.3.239", {:user => 'foo', :pass => 'barbaz'})
+      yo.list_gstore_objects('rgeyer').each do |obj|
+        puts obj['Key']
+        ['Universal', 'iPod', 'iPad', 'AppleTV', 'Android High', 'High Profile' ].each do |preset|
+          #yo.publish_to_amqp({:type => 'gstore', :object => obj, :handbrake_preset => preset})
+        end
+      end
     end
+  end
 
-    def list_gstore_objects(bucket_name)
-      @gstore.get_bucket(bucket_name).body['Contents']
-    end
-
-    def list_rss_objects(rss_link)
-      rss = SimpleRSS.parse open(rss_link)
-      rss.items
-    end
-
-    def publish_to_amqp(message)
-      @exchange.publish(message, :key => @input_queue_name)
-    end
-
-    def get_input_queue_status
-      @queue.status
+  context :list_rss_objects do
+    it 'can extract rss objects' do
+      yo = RGeyer::Controller.new("50.112.3.239", {:user => 'foo', :pass => 'barbaz'})
+      objects = yo.list_rss_objects 'http://archive.org/services/collection-rss.php?collection=opensource_movies'
+      #puts objects.to_yaml
+      puts yo.get_input_queue_status.to_yaml
     end
   end
 end

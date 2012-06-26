@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+# Copyright (c) 2012 Ryan J. Geyer
+#
+# Permission is hereby granted, free of charge, to any person obtaining
+# a copy of this software and associated documentation files (the
+# "Software"), to deal in the Software without restriction, including
+# without limitation the rights to use, copy, modify, merge, publish,
+# distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to
+# the following conditions:
+#
+# The above copyright notice and this permission notice shall be
+# included in all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+# LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+# WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+require 'rubygems'
+require 'bundler/setup'
+require 'trollop'
+require 'json'
+
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'controller'))
+
+opts = Trollop::options do
+  banner = "A simple controller for a batch video transcoding grid application"
+
+  opt :amqp_host, "A hostname for the AMQP server", :type => :string, :required => true
+  opt :amqp_username, "A username to authenticate with the AMQP server", :type => :string
+  opt :amqp_password, "A password to authenticate with the AMQP server", :type => :string
+  opt :input_queue_name, "The name of the input queue on the AMQP server", :default => 'encode_input'
+  opt :source, "The source for the video files, either 'gstore' for a Google Storage bucket, or 'rss' for an RSS feed", :type => :string, :required => true
+  opt :gstorage_bucket, "The name of the Google Storage bucket where the source video files reside", :type => :string
+  opt :rss_url, "The URL of an RSS feed containing a media_content_url parameter which is a video link", :type => :string
+  opt :handbrake_preset, "The name of one or many HandBrake presets to use for transcoding videos", :type => :strings, :multi => true, :required => true
+end
+
+Trollop::die :gstorage_bucket, "You must specify a google storage bucket when source is 'gstore'" if opts[:source] == 'gstore' && !opts[:gstorage_bucket]
+Trollop::die :rss_url, "You must specify an rss url when source is 'rss'" if opts[:source] == 'rss' && !opts[:rss_url]
+
+controller_opts = opts
+
+controller_opts[:user] = opts[:amqp_username] if opts[:amqp_username]
+controller_opts[:pass] = opts[:amqp_password] if opts[:amqp_password]
+
+controller = RGeyer::Controller.new(opts[:amqp_host], controller_opts)
+added_count = 0
+
+if opts[:source] == 'gstore'
+  controller.list_gstore_objects(opts[:gstorage_bucket]).each do |obj|
+    opts[:handbrake_preset].each do |preset|
+      controller.publish_to_amqp({:type => 'gstore', :object => obj, :handbrake_preset => preset})
+      added_count += 1
+    end
+  end
+elsif opts[:source] == 'rss'
+  controller.list_rss_objects(opts[:rss_url]).each do |obj|
+    preset = opts[:handbrake_preset]
+    message = {:type => 'rss', :object => obj, :handbrake_presets => preset}.to_json
+    controller.publish_to_amqp(message)
+    added_count += 1
+  end
+end
+
+input_queue_status = controller.get_input_queue_status
+
+puts "Added #{added_count} jobs to be processed, there are now #{input_queue_status[:message_count]} jobs in the input queue"

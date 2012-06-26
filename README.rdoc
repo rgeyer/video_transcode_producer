@@ -1,6 +1,20 @@
 = controller
 
-Description goes here.
+Fetches a list of video files from a Google Storage bucket, then publishes messages for each of them to an AMQP queue for processing.
+
+Requires that a ~/.fog configuration file be created which contains google api credentials.
+
+  :default:
+    :google_storage_access_key_id: ""
+    :google_storage_secret_access_key: ""
+
+Required inputs
+
+* Google Storage Key (in ~/.fog)
+* Google Storage Secret (in ~/.fog)
+* AMQP URI
+* AMQP Server Username
+* AMQP Server Password
 
 == Contributing to controller
  
