@@ -26,10 +26,10 @@ require 'bundler/setup'
 require 'trollop'
 require 'json'
 
-require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'controller'))
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'transcode_producer'))
 
 opts = Trollop::options do
-  banner = "A simple controller for a batch video transcoding grid application"
+  banner = "A simple job producer for a batch video transcoding grid application"
 
   opt :amqp_host, "A hostname for the AMQP server", :type => :string, :required => true
   opt :amqp_username, "A username to authenticate with the AMQP server", :type => :string
@@ -44,30 +44,30 @@ end
 Trollop::die :gstorage_bucket, "You must specify a google storage bucket when source is 'gstore'" if opts[:source] == 'gstore' && !opts[:gstorage_bucket]
 Trollop::die :rss_url, "You must specify an rss url when source is 'rss'" if opts[:source] == 'rss' && !opts[:rss_url]
 
-controller_opts = opts
+producer_opts = opts
 
-controller_opts[:user] = opts[:amqp_username] if opts[:amqp_username]
-controller_opts[:pass] = opts[:amqp_password] if opts[:amqp_password]
+producer_opts[:user] = opts[:amqp_username] if opts[:amqp_username]
+producer_opts[:pass] = opts[:amqp_password] if opts[:amqp_password]
 
-controller = RGeyer::Controller.new(opts[:amqp_host], controller_opts)
+producer = RGeyer::TranscodeProducer.new(opts[:amqp_host], producer_opts)
 added_count = 0
 
 if opts[:source] == 'gstore'
-  controller.list_gstore_objects(opts[:gstorage_bucket]).each do |obj|
+  producer.list_gstore_objects(opts[:gstorage_bucket]).each do |obj|
     opts[:handbrake_preset].each do |preset|
-      controller.publish_to_amqp({:type => 'gstore', :object => obj, :handbrake_preset => preset})
+      producer.publish_to_amqp({:type => 'gstore', :object => obj, :handbrake_preset => preset})
       added_count += 1
     end
   end
 elsif opts[:source] == 'rss'
-  controller.list_rss_objects(opts[:rss_url]).each do |obj|
+  producer.list_rss_objects(opts[:rss_url]).each do |obj|
     preset = opts[:handbrake_preset]
     message = {:type => 'rss', :object => obj, :handbrake_presets => preset}.to_json
-    controller.publish_to_amqp(message)
+    producer.publish_to_amqp(message)
     added_count += 1
   end
 end
 
-input_queue_status = controller.get_input_queue_status
+input_queue_status = producer.get_input_queue_status
 
 puts "Added #{added_count} jobs to be processed, there are now #{input_queue_status[:message_count]} jobs in the input queue"

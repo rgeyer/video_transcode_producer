@@ -1,4 +1,4 @@
-= controller
+= transcode_producer
 
 Fetches a list of video files from a Google Storage bucket, then publishes messages for each of them to an AMQP queue for processing.
 
@@ -16,7 +16,7 @@ Required inputs
 * AMQP Server Username
 * AMQP Server Password
 
-== Contributing to controller
+== Contributing to transcode_producer
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.

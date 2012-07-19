@@ -25,7 +25,7 @@ require 'bundler/setup'
 require 'flexmock'
 require 'rspec'
 
-require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'controller'))
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'lib', 'transcode_producer'))
 
 RSpec.configure do |c|
   c.mock_with(:flexmock)

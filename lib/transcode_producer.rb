@@ -25,7 +25,7 @@ require 'simple-rss'
 require 'open-uri'
 
 module RGeyer
-  class Controller
+  class TranscodeProducer
 
     def initialize(amqp_hostname, options={})
       options.merge!({:host => amqp_hostname})
