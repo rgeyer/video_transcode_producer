@@ -14,7 +14,6 @@ rescue Bundler::BundlerError => e
 end
 require 'rake'
 
-
 desc 'Package gem'
 gemtask = Rake::GemPackageTask.new(Gem::Specification.load('transcode_producer.gemspec')) do |package|
   package.package_dir = 'pkg'
