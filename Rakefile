@@ -14,20 +14,6 @@ rescue Bundler::BundlerError => e
 end
 require 'rake'
 
-#require 'jeweler'
-#Jeweler::Tasks.new do |gem|
-#  # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
-#  gem.name = "transcode_producer"
-#  gem.homepage = "http://github.com/rgeyer/transcode_producer"
-#  gem.license = "MIT"
-#  gem.summary = %Q{Fetches videos from an RSS feed, and creates transcoding jobs in an AMQP queue}
-#  gem.description = gem.summary
-#  gem.email = "me@ryangeyer.com"
-#  gem.authors = ["Ryan J. Geyer"]
-#  gem.executables << 'transcode_producer'
-#  # dependencies defined in Gemfile
-#end
-#Jeweler::RubygemsDotOrgTasks.new
 
 desc 'Package gem'
 gemtask = Rake::GemPackageTask.new(Gem::Specification.load('transcode_producer.gemspec')) do |package|
