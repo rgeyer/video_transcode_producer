@@ -26,22 +26,13 @@ require 'yaml'
 describe RGeyer::TranscodeProducer do
   context :list_gstore_objects do
     it 'can contact google' do
-      yo = RGeyer::TranscodeProducer.new("50.112.3.239", {:user => 'foo', :pass => 'barbaz'})
-      yo.list_gstore_objects('rgeyer').each do |obj|
-        puts obj['Key']
-        ['Universal', 'iPod', 'iPad', 'AppleTV', 'Android High', 'High Profile' ].each do |preset|
-          #yo.publish_to_amqp({:type => 'gstore', :object => obj, :handbrake_preset => preset})
-        end
-      end
+
     end
   end
 
   context :list_rss_objects do
     it 'can extract rss objects' do
-      yo = RGeyer::TranscodeProducer.new("50.112.3.239", {:user => 'foo', :pass => 'barbaz'})
-      objects = yo.list_rss_objects 'http://archive.org/services/collection-rss.php?collection=opensource_movies'
-      #puts objects.to_yaml
-      puts yo.get_input_queue_status.to_yaml
+
     end
   end
 end
