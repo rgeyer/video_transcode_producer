@@ -56,7 +56,7 @@ PLATFORMS
 DEPENDENCIES
   bundler (~> 1.1.0)
   flexmock (~> 0.9)
-  rake (> 0)
+  rake
   rcov
   rdoc (~> 3.12)
   rspec (~> 2.8)
