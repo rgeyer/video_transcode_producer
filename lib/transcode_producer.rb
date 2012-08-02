@@ -38,9 +38,9 @@ module RGeyer
       @exchange = @bunny.exchange('')
     end
 
-    def list_gstore_objects(bucket_name)
-      @gstore.get_bucket(bucket_name).body['Contents']
-    end
+    #def list_gstore_objects(bucket_name)
+    #  @gstore.get_bucket(bucket_name).body['Contents']
+    #end
 
     def list_rss_objects(rss_link)
       rss = SimpleRSS.parse open(rss_link)
