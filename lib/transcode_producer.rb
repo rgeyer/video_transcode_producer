@@ -31,7 +31,7 @@ module RGeyer
       options.merge!({:host => amqp_hostname})
       @input_queue_name = options[:input_queue_name] || 'encode_input'
 
-      @gstore = Fog::Storage.new({:provider => 'Google'})
+    #  @gstore = Fog::Storage.new({:provider => 'Google'})
       @bunny = Bunny.new(options)
       @bunny.start
       @queue = @bunny.queue(@input_queue_name)
