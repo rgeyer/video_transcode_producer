@@ -14,7 +14,7 @@ Gem::Specification.new do |gem|
   gem.add_dependency('fog', '~> 1.3')
   gem.add_dependency('trollop', '~> 1.16')
   gem.add_dependency('simple-rss', '~> 1.2')
-  gem.add_dependency('json', '~> 1.7')
+  gem.add_dependency('json', '>= 1.7', '< 3.0')
 
   gem.files = Dir.glob("{lib,bin}/**/*") + ["LICENSE.txt", "README.rdoc"]
 end
